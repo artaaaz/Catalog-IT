@@ -46,7 +46,7 @@ export async function loginAction(params: LoginParams): Promise<AuthResponse> {
   const cleanIdentifier = identifier.trim();
 
   // Find user in PostgreSQL by exact email or username prefix
-  const user = await prisma.user.findFirst({
+  let user = await prisma.user.findFirst({
     where: {
       OR: [
         { email: { equals: cleanIdentifier, mode: 'insensitive' } },
@@ -62,7 +62,13 @@ export async function loginAction(params: LoginParams): Promise<AuthResponse> {
     };
   }
 
-  const isPasswordValid = await verifyPassword(password, user.password);
+  // Verify password with bcrypt
+  let isPasswordValid = await verifyPassword(password, user.password);
+  // Robust fallback if password was copy-pasted with leading/trailing whitespace
+  if (!isPasswordValid && password.trim() !== password) {
+    isPasswordValid = await verifyPassword(password.trim(), user.password);
+  }
+
   if (!isPasswordValid) {
     return {
       success: false,
@@ -74,14 +80,14 @@ export async function loginAction(params: LoginParams): Promise<AuthResponse> {
   if (user.status === UserStatus.PENDING) {
     return {
       success: false,
-      error: 'Your account is waiting for administrator approval.',
+      error: 'Akun Anda masih menunggu persetujuan dari administrator.',
     };
   }
 
   if (user.status === UserStatus.REJECTED) {
     return {
       success: false,
-      error: 'Your account has been rejected. Please contact administrator.',
+      error: 'Akun Anda telah ditolak. Silakan hubungi administrator.',
     };
   }
 

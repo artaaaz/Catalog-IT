@@ -1,4 +1,4 @@
-import { PrismaClient, ServiceStatus, Role } from '@prisma/client';
+import { PrismaClient, ServiceStatus, Role, UserStatus } from '@prisma/client';
 import * as XLSX from 'xlsx';
 import * as path from 'path';
 import bcrypt from 'bcryptjs';
@@ -125,7 +125,7 @@ function parseUrl(rawUrl: string | null | undefined): string | null {
 async function main() {
   console.log('--- START SEEDING NR IT CATALOG ---');
 
-  // 0. Seed Users (ADMIN and USER roles)
+  // 0. Seed Users (ADMIN and USER roles with idempotent upsert)
   console.log('0. Seeding Authentication Users...');
   const salt = await bcrypt.genSalt(10);
   const demoPassword = await bcrypt.hash('NRcatalog123!', salt);
@@ -136,14 +136,14 @@ async function main() {
       name: 'Administrator NR',
       password: demoPassword,
       role: Role.ADMIN,
-      status: 'APPROVED',
+      status: UserStatus.APPROVED,
     },
     create: {
       name: 'Administrator NR',
       email: 'admin@nusantararegas.com',
       password: demoPassword,
       role: Role.ADMIN,
-      status: 'APPROVED',
+      status: UserStatus.APPROVED,
     },
   });
   console.log(`Seeded User: [${adminUser.name}] <${adminUser.email}> (Role: ${adminUser.role}, Status: ${adminUser.status})`);
@@ -154,14 +154,14 @@ async function main() {
       name: 'Pekerja Nusantara Regas',
       password: demoPassword,
       role: Role.USER,
-      status: 'APPROVED',
+      status: UserStatus.APPROVED,
     },
     create: {
       name: 'Pekerja Nusantara Regas',
       email: 'user@nusantararegas.com',
       password: demoPassword,
       role: Role.USER,
-      status: 'APPROVED',
+      status: UserStatus.APPROVED,
     },
   });
   console.log(`Seeded User: [${regularUser.name}] <${regularUser.email}> (Role: ${regularUser.role}, Status: ${regularUser.status})`);
