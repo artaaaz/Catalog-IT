@@ -1,7 +1,7 @@
 import { PrismaClient, ServiceStatus, Role, UserStatus } from '@prisma/client';
 import * as XLSX from 'xlsx';
 import * as path from 'path';
-import bcrypt from 'bcryptjs';
+import { hashPassword } from '../lib/auth/password';
 
 const prisma = new PrismaClient();
 
@@ -127,8 +127,7 @@ async function main() {
 
   // 0. Seed Users (ADMIN and USER roles with idempotent upsert)
   console.log('0. Seeding Authentication Users...');
-  const salt = await bcrypt.genSalt(10);
-  const demoPassword = await bcrypt.hash('NRcatalog123!', salt);
+  const demoPassword = await hashPassword('NRcatalog123!');
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@nusantararegas.com' },
