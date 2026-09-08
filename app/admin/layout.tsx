@@ -12,6 +12,7 @@ import {
   Shield,
   LogOut,
   User as UserIcon,
+  Users,
 } from 'lucide-react';
 import { useSession } from '@/lib/auth/SessionContext';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/sla',
       icon: ShieldAlert,
       active: pathname.startsWith('/admin/sla'),
+    },
+    {
+      label: 'User Approvals',
+      href: '/admin/users',
+      icon: Users,
+      active: pathname.startsWith('/admin/users') || pathname.startsWith('/admin/user-approvals'),
     },
   ];
 

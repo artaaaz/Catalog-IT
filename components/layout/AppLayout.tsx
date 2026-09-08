@@ -14,8 +14,11 @@ export function AppLayout({ categories, children }: AppLayoutProps) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Dedicated full-screen standalone layout for Login and Unauthorized pages
-  const isAuthOrErrorPage = pathname === '/login' || pathname === '/unauthorized';
+  // Dedicated full-screen standalone layout for Login, Register, and Unauthorized pages
+  const isAuthOrErrorPage =
+    pathname === '/login' ||
+    pathname === '/unauthorized' ||
+    pathname.startsWith('/register');
 
   if (isAuthOrErrorPage) {
     return <div className="min-h-screen font-sans antialiased">{children}</div>;

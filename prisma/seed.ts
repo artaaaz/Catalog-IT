@@ -137,15 +137,17 @@ async function main() {
       name: 'Administrator NR',
       password: adminPassword,
       role: Role.ADMIN,
+      status: 'APPROVED',
     },
     create: {
       name: 'Administrator NR',
       email: 'admin@nusantararegas.com',
       password: adminPassword,
       role: Role.ADMIN,
+      status: 'APPROVED',
     },
   });
-  console.log(`Seeded User: [${adminUser.name}] <${adminUser.email}> (Role: ${adminUser.role})`);
+  console.log(`Seeded User: [${adminUser.name}] <${adminUser.email}> (Role: ${adminUser.role}, Status: ${adminUser.status})`);
 
   const regularUser = await prisma.user.upsert({
     where: { email: 'user@nusantararegas.com' },
@@ -153,15 +155,17 @@ async function main() {
       name: 'Pekerja Nusantara Regas',
       password: userPassword,
       role: Role.USER,
+      status: 'APPROVED',
     },
     create: {
       name: 'Pekerja Nusantara Regas',
       email: 'user@nusantararegas.com',
       password: userPassword,
       role: Role.USER,
+      status: 'APPROVED',
     },
   });
-  console.log(`Seeded User: [${regularUser.name}] <${regularUser.email}> (Role: ${regularUser.role})`);
+  console.log(`Seeded User: [${regularUser.name}] <${regularUser.email}> (Role: ${regularUser.role}, Status: ${regularUser.status})`);
 
   // 1. Seed Categories
   const categoryMap = new Map<string, string>(); // slug -> id

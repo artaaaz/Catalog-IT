@@ -23,35 +23,54 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 1. Protect Admin Routes (/admin, /admin/*)
-  if (pathname.startsWith('/admin')) {
-    if (!sessionUser) {
+  const isPublicRoute =
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname.startsWith('/register/') ||
+    pathname === '/unauthorized';
+
+  // 1. If unauthenticated and NOT on a public route -> redirect to /login
+  if (!sessionUser) {
+    if (!isPublicRoute) {
       const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('callbackUrl', pathname);
+      if (pathname !== '/') {
+        loginUrl.searchParams.set('callbackUrl', pathname);
+      }
       return NextResponse.redirect(loginUrl);
     }
-
-    if (sessionUser.role !== 'ADMIN') {
-      // User is logged in as regular USER -> unauthorized access to Admin
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
-
     return NextResponse.next();
   }
 
-  // 2. Redirect logged-in users visiting /login
-  if (pathname === '/login') {
-    if (sessionUser) {
-      if (sessionUser.role === 'ADMIN') {
-        return NextResponse.redirect(new URL('/admin', request.url));
-      }
-      return NextResponse.redirect(new URL('/', request.url));
+  // 2. If authenticated user visits /login or /register -> redirect to appropriate home
+  if (pathname === '/login' || pathname === '/register' || pathname === '/register/pending') {
+    if (sessionUser.role === 'ADMIN') {
+      return NextResponse.redirect(new URL('/admin', request.url));
     }
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // 3. If authenticated user tries to access /admin/* but is not ADMIN -> redirect to /unauthorized
+  if (pathname.startsWith('/admin')) {
+    if (sessionUser.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
+    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/login'],
+  matcher: [
+    /*
+     * Match all request paths except for:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - images (public images)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|images|favicon.ico).*)',
+  ],
 };
+

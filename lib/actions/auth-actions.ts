@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { verifyPassword } from '@/lib/auth/password';
+import { hashPassword, verifyPassword } from '@/lib/auth/password';
 import {
   createSessionToken,
   setSessionCookie,
@@ -10,12 +10,19 @@ import {
   SessionUser,
 } from '@/lib/auth/session';
 import { revalidatePath } from 'next/cache';
-import { Role } from '@prisma/client';
+import { Role, UserStatus } from '@prisma/client';
 
 export interface LoginParams {
   identifier: string;
   password: string;
   rememberMe?: boolean;
+}
+
+export interface RegisterParams {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
 }
 
 export interface AuthResponse {
@@ -63,7 +70,22 @@ export async function loginAction(params: LoginParams): Promise<AuthResponse> {
     };
   }
 
-  // Create JWT session token
+  // Check Account Status (PENDING, REJECTED, APPROVED)
+  if (user.status === UserStatus.PENDING) {
+    return {
+      success: false,
+      error: 'Your account is waiting for administrator approval.',
+    };
+  }
+
+  if (user.status === UserStatus.REJECTED) {
+    return {
+      success: false,
+      error: 'Your account has been rejected. Please contact administrator.',
+    };
+  }
+
+  // Create JWT session token for APPROVED user
   const token = await createSessionToken(
     {
       userId: user.id,
@@ -92,6 +114,64 @@ export async function loginAction(params: LoginParams): Promise<AuthResponse> {
       role: user.role,
     },
     redirectTo,
+  };
+}
+
+export async function registerAction(params: RegisterParams): Promise<AuthResponse> {
+  const { name, email, password, confirmPassword } = params;
+
+  if (!name || !name.trim()) {
+    return { success: false, error: 'Full Name is required.' };
+  }
+
+  if (!email || !email.trim()) {
+    return { success: false, error: 'Email address is required.' };
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) {
+    return { success: false, error: 'Please enter a valid email address.' };
+  }
+
+  if (!password || password.length < 6) {
+    return { success: false, error: 'Password must be at least 6 characters.' };
+  }
+
+  if (confirmPassword !== undefined && password !== confirmPassword) {
+    return { success: false, error: 'Confirm Password does not match.' };
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+
+  // Check if email already registered
+  const existing = await prisma.user.findUnique({
+    where: { email: cleanEmail },
+  });
+
+  if (existing) {
+    return {
+      success: false,
+      error: 'This email address is already registered. Please sign in instead.',
+    };
+  }
+
+  // Hash password with bcrypt
+  const hashedPassword = await hashPassword(password);
+
+  // Create User with role USER and status PENDING (strictly no role selection)
+  await prisma.user.create({
+    data: {
+      name: name.trim(),
+      email: cleanEmail,
+      password: hashedPassword,
+      role: Role.USER,
+      status: UserStatus.PENDING,
+    },
+  });
+
+  return {
+    success: true,
+    redirectTo: '/register/pending',
   };
 }
 
