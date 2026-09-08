@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ServiceStatus {
+  ACTIVE
+  UNDER_REVIEW
+  INACTIVE
+}
+
+enum PriorityLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  password  String
+  role      Role       @default(USER)
+  status    UserStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  icon        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  services    Service[]
+
+  @@map("categories")
+}
+
+model Service {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  categoryId  String
+  description String?       @db.Text
+  url         String?       @db.Text
+  owner       String?
+  developer   String?
+  server      String?
+  integration String?       @db.Text
+  status      ServiceStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  category    Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  sla         SLA?
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([owner])
+  @@map("services")
+}
+
+model SLA {
+  id             String         @id @default(cuid())
+  serviceId      String         @unique
+  availability   String?
+  responseTime   String?
+  resolutionTime String?
+  supportHours   String?
+  priority       PriorityLevel? @default(MEDIUM)
+  notes          String?        @db.Text
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  service        Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("slas")
+}
