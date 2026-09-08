@@ -182,7 +182,7 @@ export default function LoginPage() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => handleFillCredentials('admin@nusantararegas.com', 'admin123')}
+                  onClick={() => handleFillCredentials('admin@nusantararegas.com', 'NRcatalog123!')}
                   className="px-2.5 py-1.5 text-left text-xs bg-white hover:bg-[#EAF5FA] border border-[#E2E8F0] hover:border-[#0068A5]/40 rounded-lg transition-all group"
                 >
                   <div className="font-bold text-[#0068A5] flex items-center justify-between">
@@ -194,7 +194,7 @@ export default function LoginPage() {
 
                 <button
                   type="button"
-                  onClick={() => handleFillCredentials('user@nusantararegas.com', 'user123')}
+                  onClick={() => handleFillCredentials('user@nusantararegas.com', 'NRcatalog123!')}
                   className="px-2.5 py-1.5 text-left text-xs bg-white hover:bg-slate-50 border border-[#E2E8F0] hover:border-slate-400 rounded-lg transition-all group"
                 >
                   <div className="font-bold text-slate-700 flex items-center justify-between">

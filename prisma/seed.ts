@@ -128,21 +128,20 @@ async function main() {
   // 0. Seed Users (ADMIN and USER roles)
   console.log('0. Seeding Authentication Users...');
   const salt = await bcrypt.genSalt(10);
-  const adminPassword = await bcrypt.hash('admin123', salt);
-  const userPassword = await bcrypt.hash('user123', salt);
+  const demoPassword = await bcrypt.hash('NRcatalog123!', salt);
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@nusantararegas.com' },
     update: {
       name: 'Administrator NR',
-      password: adminPassword,
+      password: demoPassword,
       role: Role.ADMIN,
       status: 'APPROVED',
     },
     create: {
       name: 'Administrator NR',
       email: 'admin@nusantararegas.com',
-      password: adminPassword,
+      password: demoPassword,
       role: Role.ADMIN,
       status: 'APPROVED',
     },
@@ -153,14 +152,14 @@ async function main() {
     where: { email: 'user@nusantararegas.com' },
     update: {
       name: 'Pekerja Nusantara Regas',
-      password: userPassword,
+      password: demoPassword,
       role: Role.USER,
       status: 'APPROVED',
     },
     create: {
       name: 'Pekerja Nusantara Regas',
       email: 'user@nusantararegas.com',
-      password: userPassword,
+      password: demoPassword,
       role: Role.USER,
       status: 'APPROVED',
     },

@@ -52,9 +52,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
     {
       label: 'User Approvals',
-      href: '/admin/users',
+      href: '/admin/user-approvals',
       icon: Users,
-      active: pathname.startsWith('/admin/users') || pathname.startsWith('/admin/user-approvals'),
+      active: pathname.startsWith('/admin/user-approvals') || pathname.startsWith('/admin/users'),
     },
   ];
 
